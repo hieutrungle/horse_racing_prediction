@@ -16,7 +16,7 @@ All dependencies are listed in the requirements.txt
 download requirements.txt
 
 In the terminal, type: 
-'pip install -r requirements.txt'
+`pip install -r requirements.txt`
 
 # GitHub URL
 **[https://github.com/GarlicSoup/horse_racing_prediction](https://github.com/GarlicSoup/horse_racing_prediction)**
