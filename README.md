@@ -1,6 +1,7 @@
 # Horse Racing Prediction
 The goal of this project is to predict which horse in a race can be the first 3 winners.
 
+
 ## Data
 The data is given and can be downloaded [here](https://drive.google.com/file/u/2/d/18EdiC515lnr7NDKJK_EdELRCmk5t2z0T/view)
 
@@ -17,6 +18,11 @@ download requirements.txt
 
 In the terminal, type: 
 `pip install -r requirements.txt`
+
+## File Description
+- notebook_data_processing: preprocess and select meaningful data to build model
+- classification: horse top3 prediction based on preprocessed data
+- Input file: data is given in the compressed file given in the Data section. After unziping it, data in historical_data folder will be used.
 
 # GitHub URL
 **[https://github.com/GarlicSoup/horse_racing_prediction](https://github.com/GarlicSoup/horse_racing_prediction)**
