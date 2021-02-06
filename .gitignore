@@ -1,0 +1,9 @@
+src/Untitled*.ipynb
+.ipynb_checkpoints/
+data/
+.vscode/
+__pycache__/
+src/*.csv
+Untitled*.ipynb
+.idea/*.*
+src/config.yaml
