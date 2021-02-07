@@ -15,6 +15,7 @@ from os.path import dirname, abspath
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LogisticRegression
 import time
+import json
 
 # Import data
 current_path = dirname(dirname(abspath(__file__)))
@@ -101,3 +102,7 @@ for feature in rfe_features:
 print("Keys: selected features")
 print("Values: number of times each feature has been chosen")
 print(feature_dict)
+
+json = json.dumps(feature_dict)
+with open("useful_features.json","w") as f:
+    f.write(json)
