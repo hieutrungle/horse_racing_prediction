@@ -53,7 +53,7 @@ def cor_selector(X, y,num_feats):
     cor_support = [True if i in cor_feature else False for i in feature_name]
     return cor_support, cor_feature
 cor_support, cor_features = cor_selector(X_train, y_train_top3, num_features)
-print(f"run time: {time.time() - t0}")
+print(f"run time: {time.time() - t0:0.5f} sec")
 print(str(len(cor_features)), 'selected features')
 print(f"selected features: {cor_features}\n")
 for feature in cor_features:
@@ -66,7 +66,7 @@ embeded_rf_selector = SelectFromModel(RandomForestClassifier(n_estimators=100))
 embeded_rf_selector.fit(X_train, y_train_top3)
 embeded_rf_support = embeded_rf_selector.get_support()
 embeded_rf_features = X_train.loc[:,embeded_rf_support].columns.tolist()
-print(f"run time: {time.time() - t0}")
+print(f"run time: {time.time() - t0:0.5f} sec")
 print(str(len(cor_features)), 'selected features')
 print(f"selected features: {embeded_rf_features}\n")
 for feature in embeded_rf_features:
@@ -80,7 +80,7 @@ chi_selector = SelectKBest(chi2, k=num_features)
 chi_selector.fit(X_norm, y_train_top3)
 chi_support = chi_selector.get_support()
 chi_features = X_train.loc[:,chi_support].columns.tolist()
-print(f"run time: {time.time() - t0}")
+print(f"run time: {time.time() - t0:0.5f} sec")
 print(str(len(chi_features)), 'selected features')
 print(f"selected features: {chi_features}\n")
 for feature in chi_features:
@@ -93,7 +93,7 @@ rfe_selector = RFE(estimator=LogisticRegression(), n_features_to_select=num_feat
 rfe_selector.fit(X_norm, y_train_top3)
 rfe_support = rfe_selector.get_support()
 rfe_features = X_train.loc[:,rfe_support].columns.tolist()
-print(f"run time: {time.time() - t0}")
+print(f"run time: {time.time() - t0:0.5f} sec")
 print(str(len(rfe_features)), 'selected features')
 print(f"selected features: {rfe_features}\n")
 for feature in rfe_features:
