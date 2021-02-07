@@ -8,3 +8,4 @@ Untitled*.ipynb
 .idea/*.*
 src/config.yaml
 horse_racing_venv/
+test.py

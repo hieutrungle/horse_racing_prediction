@@ -4,16 +4,12 @@ warnings.filterwarnings('ignore')
 
 # Import libraries
 import pickle
+from os.path import dirname, abspath
 import os
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import plotly 
-import plotly.express as px
 import math
 import numpy as np
 import time
-plt.style.use('fivethirtyeight')
 
 
 def get_pickle_data(data_folder):
@@ -29,19 +25,22 @@ def get_pickle_data(data_folder):
                     data = pickle.load(f)
                 data_dict[file] = data
         
-    print(f"data files in {data_folder}: {data_dict.keys()} \n")
-    print(f"Total files: {len(data_dict.keys())} \n")
+    print(f"data files in {data_folder}: {data_dict.keys()}")
+    print(f"Total files in the given data folder: {len(data_dict.keys())}\n")
     return data_dict
 
 historical_dict = {}
 
 # Get data from historical data folder
-historical_folder = "Data/historical_data/"
+current_path = dirname(dirname(abspath(__file__)))
+parent_path = dirname(current_path)
+historical_folder = parent_path + "/data/historical_data/"
 historical_dict = get_pickle_data(historical_folder)
 
 
 """''''''''''''''''''''''''''''''''''''''''''''"""
 ''' Processing race information in RA file '''
+print("Process race information...")
 race_detail_df = historical_dict["RA.pickle"]
 
 #   *** Aggregate data to have race_id ***
@@ -67,28 +66,33 @@ race_info_cols = ["race_id", "Kyori", "TrackCD", "TenkoBaba$SibaBabaCD", "TenkoB
 race_df = race_detail_df[race_info_cols]
 race_df.rename(columns={"Kyori": "distance(m)", "TrackCD": "racetrack_type",
                         "TenkoBaba$SibaBabaCD": "turf_condition", "TenkoBaba$DirtBabaCD": "dirt_condition"}, inplace=True)
+print("Finished processing race information!\n")
 
 
 """''''''''''''''''''''''''''''''''''''''''''''"""
 ''' Processing horse information in SE file '''
+print("Process horse information...")
 horse_info_df = historical_dict["SE.pickle"]
 
 #   *** Horse Weight Handling ***
+print("  Manipulate horse weight...")
+print("  Handle missing values of horse_weight")
 # Change type of BaTaijyu (original weight) and ZogenSa (weight change) from object to int32
 horse_info_df["ZogenSa"] = horse_info_df["ZogenSa"].apply(lambda x: "000" if x=="   " else x)
 horse_info_df[["ZogenSa", "BaTaijyu"]] = horse_info_df[["ZogenSa", "BaTaijyu"]].astype("int32")
-
 # Replace missing weights with median
 horse_info_df["BaTaijyu"] = horse_info_df["BaTaijyu"].apply(lambda x: horse_info_df["BaTaijyu"].median() if (x == 999 or x == 0) else x)
-
 # Test if the weight has been completely handled
 original_num_horse = horse_info_df["BaTaijyu"].count()
-print("The number of data in the original horse information dataset: ", original_num_horse)
+print("  Test if missing values of horse weight has been completely handled")
+print("  The number of data in the original horse information dataset: ", original_num_horse)
 # Eliminate horses which do not have weight information
 horse_info_df = horse_info_df[(horse_info_df["BaTaijyu"] != 999) & (horse_info_df["BaTaijyu"] != 0)]
 filtered_num_horse = horse_info_df["BaTaijyu"].count()
-print("A number of data filtered out: ", original_num_horse - filtered_num_horse)
-print("The number of data in the filtered horse information dataset: ", filtered_num_horse)
+print("  A number of data filtered out: ", original_num_horse - filtered_num_horse)
+print(f"  The number of data in the filtered horse information dataset: {filtered_num_horse}")
+print(f"  Finished handling missing values.")
+
 
 # Calculate actual horse weight
 def weight_calc(original_weight, sign, weight_change):
@@ -103,6 +107,8 @@ def weight_calc(original_weight, sign, weight_change):
 horse_info_df["horseweight"] = 0
 horse_info_df["horseweight"] = horse_info_df.apply(
                 lambda x: weight_calc(x["BaTaijyu"], x["ZogenFugo"], x["ZogenSa"]), axis=1)
+print("Finished handling horse weight!\n")
+
 
 #   *** Aggregate data to have race_id, horse_id ***
 horse_id_cols = ["id$Year", "id$MonthDay", "id$JyoCD", "id$Kaiji", "id$Nichiji", "id$RaceNum"]
@@ -133,9 +139,7 @@ horse_info_df["race_id"] = horse_id_df["id$Year"] + horse_id_df["id$MonthDay"] +
 # Get data that is suitable for prediction
 horse_info_cols = ["Umaban", "race_id", "KettoNum", "KisyuCode", "BanusiCode", "ChokyosiCode", 
                    "horseweight", "Futan", "SexCD", "Barei", "HinsyuCD", "KakuteiJyuni"]
-
 horse_df = horse_info_df[horse_info_cols]
-
 horse_df.rename(columns={"Umaban": "horse_num", "KettoNum": "horse_id",
                          "KisyuCode": "jockey_code", "BanusiCode": "owner_code", "ChokyosiCode": "trainer_code", 
                         "Futan": "carry_weight", "Barei": "horse_age",
@@ -147,7 +151,9 @@ horse_df["horse_rank_top3"] = horse_df["result"].apply(lambda x: 1 if x <= 3 els
 
 ''' Merge race_df and horse_df. Key value: race_id '''
 # There are many races that are not in the race_detail dataset. Use inner join to remove that data
+print("Merging race_df and horse_df...")
 print("number of unknown race_ids: ", len(horse_df["race_id"].unique()) - len(race_df["race_id"].unique()))
+print("Finished merging!\n")
 
 # Make a new dataframe which is the result of the merge between horse_df and race_df
 df = horse_df
@@ -157,14 +163,16 @@ df = df.merge(race_df, left_on="race_id", right_on="race_id", suffixes=(False, F
 """''''''''''''''''''''''''''''''''''''''''''''"""
 ''' Split data to training and testing set '''
 
+print("Splitting into training and testing dataset...")
 split_point = "2018"
 train_df = df[~df["race_id"].str.match(split_point)]
 test_df = df[df["race_id"].str.match(split_point)]
+print("Finished splitting!\n")
 
 
 """''''''''''''''''''''''''''''''''''''''''''''"""
 ''' Manipulate and calculate meaningful statistics of features in train_df'''
-
+print("Calculate meaningful statistics of jockeys, trainers, owners, and horses...")
 #   *** Calc win rate of jockeys ***
 train_df["jockey_winrate_top3"] = -1
 train_df["jockey_avg_rank"] = -1
@@ -299,10 +307,12 @@ for horse_id in horse_ids:
         
 end = time.time()
 print("total elapse time: ", end - start)
+print("Finished calculating statistics\n")
 
 
 """''''''''''''''''''''''''''''''''''''''''''''"""
 ''' Transfer calculated statistics to test_df and finalize training and testing dataset '''
+print("Transfer calculated statistics to test_df")
 # Get columns that are not in test_df. Those are the calculated features above.
 jockey_cols = []
 trainer_cols = []
@@ -323,16 +333,19 @@ test_df = test_df.merge(train_df[owner_cols].drop_duplicates(), how="left",
                         left_on="owner_code", right_on="owner_code", suffixes=(False, False))
 test_df["recent_avg_rank"] = test_df["horse_id"].apply(lambda x: 
                         recent_avg_rank_dict[x] if x in recent_avg_rank_dict.keys() else train_df["recent_avg_rank"].median())
+print("Finished transfering statistics to test_df\n")
+
 
 # *** Handle missing values ***
+print("Handle missing values")
 test_df["jockey_avg_rank"] = test_df["jockey_avg_rank"].fillna(8)
 test_df["owner_avg_rank"] = test_df["owner_avg_rank"].fillna(8)
 test_df["trainer_avg_rank"] = test_df["trainer_avg_rank"].fillna(8)
 test_df = test_df.fillna(0)
+print("Finished handling missing values\n")
+
 
 print ("Creating training.csv and testing.csv files...")
-
-train_df.to_csv('data/training.csv')
-test_df.to_csv('data/testing.csv')
-
+train_df.to_csv(parent_path+'/data/training.csv')
+test_df.to_csv(parent_path+'/data/testing.csv')
 print ("Complete!")
