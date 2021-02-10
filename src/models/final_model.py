@@ -148,9 +148,10 @@ estimator = [("catboost", catboost_model),
 
 #create our voting classifier, inputting our models
 
-vot_soft = VotingClassifier(estimators = estimator, voting ='soft') 
+vot_soft = VotingClassifier(estimators = estimator, voting ='soft')
+t0 = time.time()
 vot_soft.fit(X_std, y_top3)
-
+print(f"Training time for top3 Soft Voting classifier: {time.time() - t0} sec")
 yhat = vot_soft.predict(X_std)
 
 # Calculate accuracy
@@ -159,4 +160,26 @@ f1_score, true_pos_win_rate = calc_accuracy(y_top3, yhat)
 create_model_pickle(vot_soft, 'vot_soft_final.pkl')
 cm = confusion_matrix(y_top3, lgb_predict_top3)
 print(cm)
-print("Soft Voting Ensemble Done!")
+print("Soft Voting Ensemble Done!\n")
+
+
+### Hard Voting
+print("Hard Voting Ensemble...")
+#create a dictionary of our models
+estimator = [("catboost", catboost_model), 
+             ("lightGBM", lgb_model)]
+
+#create our voting classifier, inputting our models
+vot_hard = VotingClassifier(estimators = estimator, voting ='hard')
+t0 = time.time()
+vot_hard.fit(X_std, y_top3)
+print(f"Training time for top3 Hard Voting classifier: {time.time() - t0} sec")
+yhat = vot_hard.predict(X_std)
+
+# Calculate accuracy
+# f1_score, true_pos_win_rate = calc_accuracy(y_top3, yhat)
+
+create_model_pickle(vot_hard, 'vot_hard_final.pkl')
+cm = confusion_matrix(y_top3, lgb_predict_top3)
+print(cm)
+print("Hard Voting Ensemble Done!")

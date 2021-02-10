@@ -1,1 +1,1 @@
-{"train": {"logis_reg": 0.7325, "randomForest": 0.8387, "catboost": 0.7652, "lightGBM": 0.7772, "EN_HARD": 0.778, "EN_SOFT": 0.7716}, "test": {"logis_reg": 0.6605, "randomForest": 0.6938, "catboost": 0.668, "lightGBM": 0.6789, "EN_HARD": 0.68, "EN_SOFT": 0.6735}}
+{"train": {"logis_reg": 0.7328, "randomForest": 0.8736, "catboost": 0.7652, "lightGBM": 0.7772, "EN_HARD": 0.778, "EN_SOFT": 0.7716}, "test": {"logis_reg": 0.6578, "randomForest": 0.7053, "catboost": 0.668, "lightGBM": 0.6789, "EN_HARD": 0.68, "EN_SOFT": 0.6735}}

@@ -1,1 +1,1 @@
-{"criterion": "entropy", "max_depth": 300.0, "max_features": "sqrt", "min_samples_leaf": 72, "min_samples_split": 482, "n_estimators": 50}
+{"criterion": "entropy", "max_depth": 180.0, "max_features": "sqrt", "min_samples_leaf": 33, "min_samples_split": 53, "n_estimators": 50}

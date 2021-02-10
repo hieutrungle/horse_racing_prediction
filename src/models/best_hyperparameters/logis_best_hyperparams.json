@@ -1,1 +1,1 @@
-{"C": 190.0, "fit_intercept": true, "solver": "lbfgs", "tol": 0.0008903566554272435}
+{"C": 190.0, "fit_intercept": false, "solver": "sag", "tol": 0.0008740159395952419}

@@ -8,6 +8,8 @@ Original file is located at
 
 To use this file, CatBoost with GPU and LightGBM with GPU have to be installed on the machine
 
+One should use CoLab to run this file
+
 Input: Training and Testing dateset
 Output: 
 -- catboost.pkl: catboost model
@@ -82,8 +84,6 @@ from hyperopt import hp, fmin, tpe, STATUS_OK, Trials
 from sklearn.model_selection import cross_val_score
 import pickle
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import linear_model
-from sklearn.utils import class_weight
 import numpy as np
 from sklearn.ensemble import VotingClassifier
 
