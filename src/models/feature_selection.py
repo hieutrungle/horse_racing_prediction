@@ -103,5 +103,5 @@ print("Values: number of times each feature has been chosen")
 print(feature_dict)
 
 json = json.dumps(feature_dict)
-with open("useful_features.json","w") as f:
+with open("useful_features.json","wb") as f:
     f.write(json)
