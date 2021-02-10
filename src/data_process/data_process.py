@@ -346,6 +346,6 @@ print("Finished handling missing values\n")
 
 
 print ("Creating training.csv and testing.csv files...")
-train_df.to_csv(parent_path+'/data/training.csv')
-test_df.to_csv(parent_path+'/data/testing.csv')
+train_df.to_csv(parent_path+'/src/extract_feature/training.csv')
+test_df.to_csv(parent_path+'/src/extract_feature/testing.csv')
 print ("Complete!")
