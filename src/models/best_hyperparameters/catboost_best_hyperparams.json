@@ -1,0 +1,1 @@
+{"bagging_temperature": 4.089269404592995, "depth": 8.0, "iterations": 100, "l2_leaf_reg": 623, "learning_rate": 0.10208188010648063, "class_weights": [1, 4], "silent": true, "eval_metric": "AUC", "early_stopping_rounds": 250}

@@ -1,0 +1,1 @@
+{"bagging_fraction": 0.8585711947529121, "bagging_freq": 1, "feature_fraction": 0.98412273666869, "lambda_l2": 165, "learning_rate": 0.08299067054413506, "max_depth": 5, "min_data_in_leaf": 400, "num_iterations": 450, "num_leaves": 57, "objective": "binary", "metric": "auc", "is_unbalance": true, "silent": true, "verbosity": -1}
