@@ -45,7 +45,7 @@ In the terminal, type:
 - Optimal parameters of each model are place in separated json files in src/models/best_hyperparameters directory.
 - After having tuned all parameters, training and testing datasets are combined and used to build soft voting ensemble in final_model.py. It output *_final.pkl models.
 
-## Step 5: Deplot model on Flask website
+## Step 5: Deploy model on Flask website
 - Working on it
 
 
