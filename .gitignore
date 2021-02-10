@@ -10,3 +10,5 @@ src/config.yaml
 horse_racing_venv/
 test.py
 test2.py
+training.csv
+testing.csv
