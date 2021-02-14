@@ -24,37 +24,7 @@ from sklearn.utils import class_weight
 import numpy as np
 from sklearn.ensemble import VotingClassifier
 
-"""## Import data"""
 
-parent_dir_path = dirname(dirname(abspath(__file__)))
-print(parent_dir_path)
-df_train = pd.read_csv(parent_dir_path +"/extract_feature/training.csv")
-df_test = pd.read_csv(parent_dir_path +"/extract_feature/testing.csv")
-
-df = pd.concat([df_train, df_test], ignore_index=True)
-
-"""## Select features based upon those algorithm and personal analysis"""
-
-print("Select useful data...")
-with open(parent_dir_path + '/models/useful_features.json') as f:
-  useful_features = json.load(f)
-# Remove SexCD attribute
-useful_features.pop("SexCD")
-
-X = df[useful_features]
-y_top3 = df["horse_rank_top3"]
-print("Finished selecting!\n")
-
-"""# Normalization
-
-Standard Normalization
-"""
-
-print("Normalization...")
-std_scaler = StandardScaler()
-std_scaler.fit(X)
-X_std = std_scaler.transform(X)
-print("Finished normalization!\n")
 
 """# Useful functions:
 
@@ -80,106 +50,140 @@ def create_model_pickle(model, filename):
         pickle.dump(model, f)
     print("Finished pickling the model")
 
+def load_json(filepath):
+    with open(filepath) as f:
+        data = json.load(f)
+    return data
 
-with open("./best_hyperparameters/catboost_best_hyperparams.json", 'r') as f:
-    catboost_best_hyperparams = json.load(f)
-
-with open("./best_hyperparameters/lgb_best_hyperparams.json", 'r') as f:
-    lgb_best_hyperparams = json.load(f)
-
-# CatBoost
-catboost_model = catboost.CatBoostClassifier()
-catboost_model.set_params(**catboost_best_hyperparams)
-t0 = time.time()
-catboost_model.fit(X_std, y_top3)
-print(f"Training time for top3 CatBoost classifier: {time.time() - t0} sec")
-
-# Prediction on training dataset
-catboost_predict_top3 = catboost_model.predict(X_std)
-# Round the float number
-catboost_predict_top3 = catboost_predict_top3.round(0)
-#converting from float to integer
-catboost_predict_top3 = catboost_predict_top3.astype(int)
-
-# Calculate accuracy
-f1_score_train, true_pos_win_rate_train = calc_accuracy(y_top3, catboost_predict_top3)
-
-# Create a pickle file that contains the model
-create_model_pickle(catboost_model, 'catboost_final.pkl')
-cm = confusion_matrix(y_top3, catboost_predict_top3)
-print(cm)
-print("CatBoost Done!\n")
-
-# class_name = [0, 1]
-# plot_confusion_matrix(catboost_predict_top3, y_top3, class_name, normalize=False)
-
-# LightGBM
-lgb_model = lgb.LGBMClassifier()
-lgb_model.set_params(**lgb_best_hyperparams)
-t0 = time.time()
-lgb_model.fit(X_std, y_top3)
-print(f"Training time for top3 CatBoost classifier: {time.time() - t0} sec")
-
-# Prediction on training dataset
-lgb_predict_top3 = lgb_model.predict(X_std)
-# Round the float number
-lgb_predict_top3 = lgb_predict_top3.round(0)
-#converting from float to integer
-lgb_predict_top3 = lgb_predict_top3.astype(int)
-
-# Calculate accuracy
-f1_score_train, true_pos_win_rate_train = calc_accuracy(y_top3, lgb_predict_top3)
-
-# Create a pickle file that contains the model
-create_model_pickle(lgb_model, 'lightGBM_final.pkl')
-cm = confusion_matrix(y_top3, lgb_predict_top3)
-print(cm)
-print("LightGBM Done!\n")
+if __name__ == '__main__':
+    
+    """## Import data"""
+    # Get data from extract_feature data folder
+    current_path = os.getcwd()
+    parent_dir_path = dirname(dirname(current_path))
+    extract_feature_folder = parent_dir_path + "/src/extract_feature/"
+    df = pd.read_csv(extract_feature_folder +"complete_data.csv")
 
 
-"""## Ensemble model
+    """## Select features based upon those algorithm and personal analysis"""
 
-### Soft Voting
-"""
-print("Soft Voting Ensemble...")
-#create a dictionary of our models
-estimator = [("catboost", catboost_model), 
-             ("lightGBM", lgb_model)]
+    print("Select useful data...")
+    print(parent_dir_path + '/src/models/useful_features.json')
+    useful_features = load_json(parent_dir_path + '/src/models/useful_features.json')
+    # Remove SexCD attribute
+    useful_features.pop("SexCD")
 
-#create our voting classifier, inputting our models
+    X = df[useful_features]
+    y_top3 = df["horse_rank_top3"]
+    print("Finished selecting!\n")
 
-vot_soft = VotingClassifier(estimators = estimator, voting ='soft')
-t0 = time.time()
-vot_soft.fit(X_std, y_top3)
-print(f"Training time for top3 Soft Voting classifier: {time.time() - t0} sec")
-yhat = vot_soft.predict(X_std)
+    """# Normalization
 
-# Calculate accuracy
-f1_score, true_pos_win_rate = calc_accuracy(y_top3, yhat)
+    Standard Normalization
+    """
 
-create_model_pickle(vot_soft, 'vot_soft_final.pkl')
-cm = confusion_matrix(y_top3, lgb_predict_top3)
-print(cm)
-print("Soft Voting Ensemble Done!\n")
+    print("Normalization...")
+    std_scaler = StandardScaler()
+    std_scaler.fit(X)
+    X_std = std_scaler.transform(X)
+    print("Finished normalization!\n")
+
+    catboost_best_hyperparams = load_json(parent_dir_path + '/src/models/best_hyperparameters/catboost_best_hyperparams.json')
+    lgb_best_hyperparams = load_json(parent_dir_path + '/src/models/best_hyperparameters/lgb_best_hyperparams.json')
+
+    # CatBoost
+    catboost_model = catboost.CatBoostClassifier()
+    catboost_model.set_params(**catboost_best_hyperparams)
+    t0 = time.time()
+    catboost_model.fit(X_std, y_top3)
+    print(f"Training time for top3 CatBoost classifier: {time.time() - t0} sec")
+
+    # Prediction on training dataset
+    catboost_predict_top3 = catboost_model.predict(X_std)
+    # Round the float number
+    catboost_predict_top3 = catboost_predict_top3.round(0)
+    #converting from float to integer
+    catboost_predict_top3 = catboost_predict_top3.astype(int)
+
+    # Calculate accuracy
+    f1_score_model, true_pos_win_rate_model = calc_accuracy(y_top3, catboost_predict_top3)
+
+    # Create a pickle file that contains the model
+    create_model_pickle(catboost_model, 'catboost_final.pkl')
+    cm = confusion_matrix(y_top3, catboost_predict_top3)
+    print(cm)
+    print("CatBoost Done!\n")
+
+    # class_name = [0, 1]
+    # plot_confusion_matrix(catboost_predict_top3, y_top3, class_name, normalize=False)
+
+    # LightGBM
+    lgb_model = lgb.LGBMClassifier()
+    lgb_model.set_params(**lgb_best_hyperparams)
+    t0 = time.time()
+    lgb_model.fit(X_std, y_top3)
+    print(f"Training time for top3 CatBoost classifier: {time.time() - t0} sec")
+
+    # Prediction on training dataset
+    lgb_predict_top3 = lgb_model.predict(X_std)
+    # Round the float number
+    lgb_predict_top3 = lgb_predict_top3.round(0)
+    #converting from float to integer
+    lgb_predict_top3 = lgb_predict_top3.astype(int)
+
+    # Calculate accuracy
+    f1_score_model, true_pos_win_rate_model = calc_accuracy(y_top3, lgb_predict_top3)
+
+    # Create a pickle file that contains the model
+    create_model_pickle(lgb_model, 'lightGBM_final.pkl')
+    cm = confusion_matrix(y_top3, lgb_predict_top3)
+    print(cm)
+    print("LightGBM Done!\n")
 
 
-### Hard Voting
-print("Hard Voting Ensemble...")
-#create a dictionary of our models
-estimator = [("catboost", catboost_model), 
-             ("lightGBM", lgb_model)]
+    """## Ensemble model
 
-#create our voting classifier, inputting our models
-vot_hard = VotingClassifier(estimators = estimator, voting ='hard')
-t0 = time.time()
-vot_hard.fit(X_std, y_top3)
-print(f"Training time for top3 Hard Voting classifier: {time.time() - t0} sec")
-yhat = vot_hard.predict(X_std)
+    ### Soft Voting
+    """
+    print("Soft Voting Ensemble...")
+    #create a dictionary of our models
+    estimator = [("catboost", catboost_model), 
+                ("lightGBM", lgb_model)]
 
-# Calculate accuracy
-# f1_score, true_pos_win_rate = calc_accuracy(y_top3, yhat)
+    #create our voting classifier, inputting our models
 
-create_model_pickle(vot_hard, 'vot_hard_final.pkl')
-cm = confusion_matrix(y_top3, lgb_predict_top3)
-print(cm)
-print("Hard Voting Ensemble Done!")
+    vot_soft = VotingClassifier(estimators = estimator, voting ='soft')
+    t0 = time.time()
+    vot_soft.fit(X_std, y_top3)
+    print(f"Training time for top3 Soft Voting classifier: {time.time() - t0} sec")
+    yhat = vot_soft.predict(X_std)
+
+    # Calculate accuracy
+    f1_score_model, true_pos_win_rate_model = calc_accuracy(y_top3, yhat)
+
+    create_model_pickle(vot_soft, 'vot_soft_final.pkl')
+    cm = confusion_matrix(y_top3, lgb_predict_top3)
+    print(cm)
+    print("Soft Voting Ensemble Done!\n")
+
+
+    ### Hard Voting
+    print("Hard Voting Ensemble...")
+    #create a dictionary of our models
+    estimator = [("catboost", catboost_model), 
+                ("lightGBM", lgb_model)]
+
+    #create our voting classifier, inputting our models
+    vot_hard = VotingClassifier(estimators = estimator, voting ='hard')
+    t0 = time.time()
+    vot_hard.fit(X_std, y_top3)
+    print(f"Training time for top3 Hard Voting classifier: {time.time() - t0} sec")
+    yhat = vot_hard.predict(X_std)
+
+    # Calculate accuracy
+    f1_score_model, true_pos_win_rate_model = calc_accuracy(y_top3, yhat)
+
+    create_model_pickle(vot_hard, 'vot_hard_final.pkl')
+    cm = confusion_matrix(y_top3, lgb_predict_top3)
+    print(cm)
+    print("Hard Voting Ensemble Done!")

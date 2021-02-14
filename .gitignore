@@ -12,3 +12,5 @@ test.py
 test2.py
 training.csv
 testing.csv
+complete_data.csv
+*.csv
